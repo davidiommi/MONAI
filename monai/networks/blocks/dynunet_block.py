@@ -189,6 +189,7 @@ class UnetUpBlock(nn.Module):
             stride=upsample_stride,
             conv_only=True,
             is_transposed=True,
+            dropout=True,
         )
         self.conv_block = UnetBasicBlock(
             spatial_dims,
@@ -241,6 +242,7 @@ def get_conv_layer(
     spatial_dims: int,
     in_channels: int,
     out_channels: int,
+    dropout: bool = False,
     kernel_size: Union[Sequence[int], int] = 3,
     stride: Union[Sequence[int], int] = 1,
     act: Optional[Union[Tuple, str]] = Act.PRELU,
@@ -253,20 +255,37 @@ def get_conv_layer(
     output_padding = None
     if is_transposed:
         output_padding = get_output_padding(kernel_size, stride, padding)
-    return Convolution(
-        spatial_dims,
-        in_channels,
-        out_channels,
-        strides=stride,
-        kernel_size=kernel_size,
-        act=act,
-        norm=norm,
-        bias=bias,
-        conv_only=conv_only,
-        is_transposed=is_transposed,
-        padding=padding,
-        output_padding=output_padding,
-    )
+    if dropout is False:
+        return Convolution(
+            spatial_dims,
+            in_channels,
+            out_channels,
+            strides=stride,
+            kernel_size=kernel_size,
+            act=act,
+            norm=norm,
+            bias=bias,
+            conv_only=conv_only,
+            is_transposed=is_transposed,
+            padding=padding,
+            output_padding=output_padding,
+        )
+    else:
+        return Convolution(
+            spatial_dims,
+            in_channels,
+            out_channels,
+            strides=stride,
+            kernel_size=kernel_size,
+            act=act,
+            norm=norm,
+            bias=bias,
+            conv_only=conv_only,
+            is_transposed=is_transposed,
+            padding=padding,
+            output_padding=output_padding,
+            dropout=0.5,
+        )
 
 
 def get_padding(
