@@ -824,9 +824,68 @@ class DiceFocalLoss(_Loss):
         total_loss: torch.Tensor = self.lambda_dice * dice_loss + self.lambda_focal * focal_loss
         return total_loss
 
+class L1 (_Loss):
+
+    def __init__(
+
+            self,
+            include_background: bool = True,
+            to_onehot_y: bool = False,
+            sigmoid: bool = False,
+            softmax: bool = False,
+            other_act: Optional[Callable] = None,
+            squared_pred: bool = False,
+            jaccard: bool = False,
+            reduction: str = "mean",
+            smooth_nr: float = 1e-5,
+            smooth_dr: float = 1e-5,
+            batch: bool = False,
+            ce_weight: Optional[torch.Tensor] = None,
+    ) -> None:
+
+        super().__init__()
+        self.dice = DiceLoss(
+            include_background=include_background,
+            to_onehot_y=to_onehot_y,
+            sigmoid=sigmoid,
+            softmax=softmax,
+            other_act=other_act,
+            squared_pred=squared_pred,
+            jaccard=jaccard,
+            reduction=reduction,
+            smooth_nr=smooth_nr,
+            smooth_dr=smooth_dr,
+            batch=batch,
+        )
+        # self.cross_entropy = torch.nn.CrossEntropyLoss(
+        #     weight=ce_weight,
+        #     reduction=reduction,
+        # )
+
+        self.L1 = torch.nn.L1Loss(
+            reduction=reduction,
+        )
+
+    def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+
+        if len(input.shape) != len(target.shape):
+            raise ValueError("the number of dimensions for input and target should be the same.")
+
+        n_pred_ch, n_target_ch = input.shape[1], target.shape[1]
+        # if n_pred_ch == n_target_ch:
+        #     # target is in the one-hot format, convert to BH[WD] format to calculate ce loss
+        #     target = torch.argmax(target, dim=1)
+        # else:
+        #     target = torch.squeeze(target, dim=1)
+        # target = target.long()
+        ce_loss = self.L1(input, target)
+        total_loss: torch.Tensor = ce_loss * 100
+        return total_loss
+
 
 dice = Dice = DiceLoss
 dice_ce = DiceCELoss
 dice_focal = DiceFocalLoss
 generalized_dice = GeneralizedDiceLoss
 generalized_wasserstein_dice = GeneralizedWassersteinDiceLoss
+l1 = L1
