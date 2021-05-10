@@ -79,6 +79,36 @@ class MSEMetric(RegressionMetric):
         return mse_out
 
 
+class MSEMetricTraining(RegressionMetric):
+    r"""Compute Mean Squared Error between two tensors using function:
+
+    .. math::
+        \operatorname {MSE}\left(Y, \hat{Y}\right) =\frac {1}{n}\sum _{i=1}^{n}\left(y_i-\hat{y_i} \right)^{2}.
+
+    More info: https://en.wikipedia.org/wiki/Mean_squared_error
+
+    Input `y_pred` (BCHW[D] where C is number of channels) is compared with ground truth `y` (BCHW[D]).
+    Both `y_pred` and `y` are expected to be real-valued, where `y_pred` is output from a regression model.
+
+    Args:
+        reduction: {``"none"``, ``"mean"``, ``"sum"``, ``"mean_batch"``, ``"sum_batch"``,
+            ``"mean_channel"``, ``"sum_channel"``}
+            Define the mode to reduce computation result of 1 batch data. Defaults to ``"mean"``.
+
+    """
+
+    def __init__(self, reduction: Union[MetricReduction, str] = MetricReduction.MEAN) -> None:
+        super().__init__(reduction=reduction)
+        self.sq_func = partial(torch.pow, exponent=2.0)
+
+    def _compute_metric(self, y_pred: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        y_pred = y_pred.float()
+        y = y.float()
+
+        mse_out = compute_mean_error_metrics(y_pred, y, func=self.sq_func)
+        return 1 - mse_out
+
+
 class MAEMetric(RegressionMetric):
     r"""Compute Mean Absolute Error between two tensors using function:
 

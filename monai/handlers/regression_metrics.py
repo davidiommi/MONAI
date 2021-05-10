@@ -14,7 +14,7 @@ from typing import Callable, Union
 import torch
 
 from monai.handlers.iteration_metric import IterationMetric
-from monai.metrics.regression import MAEMetric, MSEMetric, PSNRMetric, RMSEMetric
+from monai.metrics.regression import MAEMetric, MSEMetric, PSNRMetric, RMSEMetric, MSEMetricTraining
 from monai.utils import MetricReduction
 
 
@@ -41,6 +41,39 @@ class MeanSquaredError(IterationMetric):
             :py:class:`monai.metrics.MSEMetric`
         """
         metric_fn = MSEMetric(
+            reduction=MetricReduction.NONE,
+        )
+        super().__init__(
+            metric_fn=metric_fn,
+            output_transform=output_transform,
+            device=device,
+            save_details=save_details,
+        )
+
+
+class MeanSquaredErrorTraining(IterationMetric):
+    """
+    Computes Mean Squared Error from full size Tensor and collects average over batch, iterations.
+    """
+
+    def __init__(
+        self,
+        output_transform: Callable = lambda x: x,
+        device: Union[str, torch.device] = "cpu",
+        save_details: bool = True,
+    ) -> None:
+        """
+
+        Args:
+            output_transform: transform the ignite.engine.state.output into [y_pred, y] pair.
+            device: device specification in case of distributed computation usage.
+            save_details: whether to save metric computation details per image, for example: mean squared error of every image.
+                default to True, will save to `engine.state.metric_details` dict with the metric name as key.
+
+        See also:
+            :py:class:`monai.metrics.MSEMetric`
+        """
+        metric_fn = MSEMetricTraining(
             reduction=MetricReduction.NONE,
         )
         super().__init__(
