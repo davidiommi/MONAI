@@ -14,7 +14,7 @@ from typing import Callable, Union
 import torch
 
 from monai.handlers.iteration_metric import IterationMetric
-from monai.metrics import MAEMetric, MSEMetric, PSNRMetric, RMSEMetric
+from monai.metrics.regression import MAEMetric, MSEMetric, PSNRMetric, RMSEMetric
 from monai.utils import MetricReduction
 
 
