@@ -109,7 +109,6 @@ class MAEMetric(RegressionMetric):
         return mae_out
 
 
-
 class RMSEMetric(RegressionMetric):
     r"""Compute Root Mean Squared Error between two tensors using function:
 
@@ -140,7 +139,6 @@ class RMSEMetric(RegressionMetric):
         mse_out = compute_mean_error_metrics(y_pred, y, func=self.sq_func)
         rmse_out = torch.sqrt(mse_out)
         return rmse_out
-
 
 
 class PSNRMetric(RegressionMetric):
@@ -181,7 +179,6 @@ class PSNRMetric(RegressionMetric):
         mse_out = compute_mean_error_metrics(y_pred, y, func=self.sq_func)
         psnr_val = 20 * math.log10(self.max_val) - 10 * torch.log10(mse_out)
         return psnr_val
-
 
 
 def compute_mean_error_metrics(y_pred: torch.Tensor, y: torch.Tensor, func) -> torch.Tensor:
