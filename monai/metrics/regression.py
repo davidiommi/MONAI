@@ -106,7 +106,7 @@ class MSEMetricTraining(RegressionMetric):
         y = y.float()
 
         mse_out = compute_mean_error_metrics(y_pred, y, func=self.sq_func)
-        return 1 - mse_out
+        return 1 - (100 * mse_out)
 
 
 class MAEMetric(RegressionMetric):
@@ -137,6 +137,36 @@ class MAEMetric(RegressionMetric):
 
         mae_out = compute_mean_error_metrics(y_pred, y, func=self.abs_func)
         return mae_out
+
+
+class MAEMetricTraining(RegressionMetric):
+    r"""Compute Mean Absolute Error between two tensors using function:
+
+    .. math::
+        \operatorname {MAE}\left(Y, \hat{Y}\right) =\frac {1}{n}\sum _{i=1}^{n}\left|y_i-\hat{y_i}\right|.
+
+    More info: https://en.wikipedia.org/wiki/Mean_absolute_error
+
+    Input `y_pred` (BCHW[D] where C is number of channels) is compared with ground truth `y` (BCHW[D]).
+    Both `y_pred` and `y` are expected to be real-valued, where `y_pred` is output from a regression model.
+
+    Args:
+        reduction: {``"none"``, ``"mean"``, ``"sum"``, ``"mean_batch"``, ``"sum_batch"``,
+            ``"mean_channel"``, ``"sum_channel"``}
+            Define the mode to reduce computation result of 1 batch data. Defaults to ``"mean"``.
+
+    """
+
+    def __init__(self, reduction: Union[MetricReduction, str] = MetricReduction.MEAN) -> None:
+        super().__init__(reduction=reduction)
+        self.abs_func = torch.abs
+
+    def _compute_metric(self, y_pred: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        y_pred = y_pred.float()
+        y = y.float()
+
+        mae_out = compute_mean_error_metrics(y_pred, y, func=self.abs_func)
+        return 1 - (100 * mae_out)
 
 
 class RMSEMetric(RegressionMetric):
